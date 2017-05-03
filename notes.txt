@@ -1,0 +1,90 @@
+forensic analysis of RasPi used in Hackathon
+used for development and have been attacked while in production
+2-3 page paper, code, and 8 min presentation
+
+Analyze
+-installed software
+-custom software
+  -code analysis on it
+  -run it in VM to determine weaknesses, possible attack vectors
+-other system info
+-basic system info
+  -OS
+  -listeners
+  -iptables
+  -users
+-forensics script
+  -visualization
+-evidence handling sheet
+
+/var/log
+bash history
+
+hackathon goal was games, attacking eachother
+
+partion 1 = BOOT
+partion 2 = ROOT
+
+last logins: last -f /mnt/var/log/wtmp
+last powered on:
+disk size: partion 1: 20.8 / 65.9 MB, partion 2:  3.9 / 7.7 GB
+md5: 
+ - partion 1: 
+   -md5: af0f5c29bddfc6064f8bd811629304fd
+   -sha1: f8a4aaf28eb488f70552ce31695c1f71e183823f 
+ - partion 2:
+   -md5: 11a9a53893742c0f0e3c6153ee01c227
+   -sha1: 2d083569696839835f95cbc6d927c6331fbf3ed9 
+OS: cat /mnt/etc/os-release
+IP: cat /mnt/var/log/syslog | grep -Ei 'dhcp'
+DNS servers: cat /mnt/etc/resolv.conf
+log messages: cat/mnt/var/log/*
+commands: cat /mnt/home/pi/.bash_history
+What was their code supposed to do?
+server, look at python_games
+What weaknesses are in their code?
+
+Create a python script: 
+ - automount the drive as read only and hash everything 
+ - create a table with users and times
+ - create a timeline of system events looking at /var/log/*
+ - create a timeline of file changes
+ - visualize IP addresses
+
+report:
+ - vulnerabilities
+ - user accounts: last -f /mnt/var/log/wtmp, cat /mnt/etc/passwd, jack the ripper
+ - firewall: look through iptables commands
+ - application purpose, look through /home/pi/server files
+ - time of changes, start from feb 10, 
+ - time of attack
+ - evidence handling sheet
+
+software installed:
+look at bash_history and /home/pi/
+
+cmds: 
+sudo apt install dconf-editor
+dconf-editor
+//=> org gnome desktop media-handling
+
+sudo fdisk -l /dev/sdb
+dmesg | grep sdb
+
+sudo chmod 440 /dev/mmcblk0
+
+sudo dcfldd if=/dev/mmcblk0p1 of=/run/media/security/SANDISK/Network_Final/pi_image.dd hash=md5,sha1 hashlog=/run/media/security/SANDISK/Network_Final/hashlog.txt
+
+cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2
+
+dd if=/dev/sdb2 of=~security/Desktop/pi_image_2.dd
+  134  mount -oro,loop ~security/Desktop/pi_image_2.dd /mnt
+  135  mount -oro,loop,nojournal ~security/Desktop/pi_image_2.dd /mnt
+  136  mount -oro,nojournal ~security/Desktop/pi_image_2.dd /mnt
+  137  dmesg | tail
+  138  fdisk -l
+  139  e2fsck -f ~security/Desktop/pi_image_2.dd 
+  140  resize2fs ~security/Desktop/pi_image_2.dd 
+  141  mount -oro,nojournal ~security/Desktop/pi_image_2.dd /mnt
+  142  dmesg | tail
+  143  mount -oro,loop ~security/Desktop/pi_image_2.dd /mnt
