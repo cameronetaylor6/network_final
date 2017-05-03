@@ -36,6 +36,7 @@ ip_output = sub.check_output(('grep', '-oE', '([0-9]{1,3}\.){3}[0-9]{1,3}'), std
 ips = {}
 ip_output = ip_output.splitlines()
 
+'''
 for i in range(0, len(ip_output)):
 	ip_output[i] = ip_output[i].decode('UTF-8')
 
@@ -73,12 +74,13 @@ ax.scatter(range(len(ip_output)), numbers)
 plt.yticks(range(len(d)), ip_output)
 
 plt.show()
-
+'''
 sub.call(['echo', '\n-----DNS Servers-----\n'])
 sub.call(['cat', '/mnt/etc/resolv.conf'])
 
 sub.call(['echo', '\n-----Log Messages-----\n'])
 #sub.call(['cat', '/mnt/var/log/*'])
+sub.call(['ls', '-la', '/mnt/var/log'])
 
 sub.call(['echo', '\n-----Command History-----\n'])
 #sub.call(['cat', '/mnt/home/pi/.bash_history'])
@@ -92,10 +94,15 @@ sub.call(['echo', '\n-----Passwords-----\n'])
 #cam
 
 #TODO: timeline of events from /mnt/var/log/*
-
+sub.call(['echo', '\n-----Events-----\n'])
+sub.call(['grep', 'COMMAND', '/mnt/var/log/auth.log'])
 
 #TODO: timeline of file changes
 #cam
+sub.call(['echo', '\n-----File Changes-----\n'])
+grp = sub.Popen(('sudo', 'find', '/mnt/*', '-mtime', '-100', '-ls'), stdout=sub.PIPE)
+output = sub.check_output(('grep', 'Feb 11'), stdin=grp.stdout)
+print(output)
 
 #TODO: visualize IP addresses - plot on pyplot over time? number of requests from each ip?
 #cam
