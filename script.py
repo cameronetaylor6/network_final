@@ -32,15 +32,47 @@ sub.call(['cat', '/mnt/etc/os-release'])
 #TODO
 sub.call(['echo', '\n-----IP-----\n'])
 cat = sub.Popen(('cat', '/mnt/var/log/syslog'), stdout=sub.PIPE)
-output = sub.check_output(('grep', '-oE', '([0-9]{1,3}\.){3}[0-9]{1,3}'), stdin=cat.stdout)
+ip_output = sub.check_output(('grep', '-oE', '([0-9]{1,3}\.){3}[0-9]{1,3}'), stdin=cat.stdout)
 ips = {}
-output = output.splitlines()
-for line in output:
+ip_output = ip_output.splitlines()
+
+for i in range(0, len(ip_output)):
+	ip_output[i] = ip_output[i].decode('UTF-8')
+
+for line in ip_output:
 	if not line in ips:
 		ips[line] = 1
 	else:
 		ips[line] += 1
-print(ips)
+
+def autolabel(rects):
+    for rect in rects:
+        height = rect.get_height()
+        ax.text(rect.get_x() + rect.get_width()/2., 1.05+height,
+                '%d' % int(height),
+                ha='center', va='bottom')
+
+lists = sorted(ips.items())
+x,y = zip(*lists)
+
+fig, ax = plt.subplots()
+bar = plt.bar(range(len(y)), y, align='center')
+autolabel(bar)
+#ax.bar(range(len(ips)), ips.values(), align='center')
+plt.xticks(range(len(x)), x)
+fig.autofmt_xdate()
+
+plt.show()
+
+d = {ni: indi for indi, ni in enumerate(set(ip_output))}
+numbers = [d[ni] for ni in ip_output]
+print(d)
+
+fig, ax = plt.subplots()
+ax.scatter(range(len(ip_output)), numbers)
+plt.yticks(range(len(d)), ip_output)
+
+plt.show()
 
 sub.call(['echo', '\n-----DNS Servers-----\n'])
 sub.call(['cat', '/mnt/etc/resolv.conf'])
